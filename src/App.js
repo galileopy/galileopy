@@ -1,26 +1,47 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import { connect } from "react-redux";
 
-function App() {
+import Header from "./elements/Header";
+import Footer from "./elements/Footer";
+
+import About from "./pages/About";
+import Resume from "./pages/Resume";
+import { profileRequest } from "./redux/actions";
+
+const stateProps = state => ({
+  profile: state.profile.resource
+});
+
+const dispatchProps = dispatch => ({
+  profileLoad: data => dispatch(profileRequest(data))
+});
+
+const App = props => {
+  const { profile, profileLoad } = props;
+
+  useEffect(() => {
+    profile.matchWith({
+      Error: () => null,
+      Query: () => null,
+      Data: () => null,
+      Empty: () =>
+        profileLoad(profile.update({ id: "currentprofiledata" }))
+    });
+  });
+
+  const footerData = profile.map(value => value.main.social);
+  const headerData = profile.map(value => value.main);
+  const aboutData = profile.map(value => value.main);
+  const resumeData = profile.map(value => value.resume);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Header resource={headerData} />
+      <About resource={aboutData} />
+      <Resume resource={resumeData} />
+      <Footer resource={footerData} />
     </div>
   );
-}
+};
 
-export default App;
+export default connect(stateProps, dispatchProps)(App);
